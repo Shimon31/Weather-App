@@ -7,16 +7,17 @@ import android.view.View
 import android.view.ViewGroup
 import com.bcsbattle.weatherapp.R
 import com.bcsbattle.weatherapp.databinding.ActivityMainBinding
+import com.bcsbattle.weatherapp.databinding.FragmentLocationBinding
 
 class LocationFragment : Fragment() {
 
-    lateinit var binding: ActivityMainBinding
+    lateinit var binding: FragmentLocationBinding
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = FragmentLocationBinding.inflate(layoutInflater)
         return binding.root
 
 
