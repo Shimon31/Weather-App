@@ -2,6 +2,7 @@ package com.bcsbattle.weatherapp.UI.Home
 
 import android.Manifest
 import android.content.pm.PackageManager
+import android.location.Geocoder
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -12,10 +13,12 @@ import androidx.activity.result.contract.ActivityResultContract
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.viewModels
 import com.bcsbattle.weatherapp.Data.CurrentLocation
 import com.bcsbattle.weatherapp.R
 import com.bcsbattle.weatherapp.databinding.ActivityMainBinding
 import com.bcsbattle.weatherapp.databinding.FragmentHomeBinding
+import com.google.android.gms.location.LocationServices
 import org.koin.mp.Lockable
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -26,8 +29,14 @@ import java.util.logging.SimpleFormatter
 class HomeFragment : Fragment() {
     lateinit var binding: FragmentHomeBinding
 
+    private val homeViewModel: HomeViewModel by viewModels()
+    private val fusedLocationProviderClient by lazy {
+        LocationServices.getFusedLocationProviderClient(requireContext())
+    }
+    private val geocoder by lazy { Geocoder(requireContext()) }
+
     private val weatherAdapter = WeatherAdapter(
-        onLocationClicked = {showLocationOption()}
+        onLocationClicked = { showLocationOption() }
     )
 
     private val locationPermissionLauncher = registerForActivityResult(
@@ -48,24 +57,46 @@ class HomeFragment : Fragment() {
         return binding.root
     }
 
+    private fun setObserver(){
+     with(homeViewModel) {
+         currentLocation.observe(viewLifecycleOwner) {
+             val currentLocationDataState = it ?: return@observe
+
+             if (currentLocationDataState.isLoading){
+                 showLoading()
+             }
+             currentLocationDataState.currentLocation?.let { currentLocation ->
+                 hideLoading()
+                 setWeatherData(currentLocation)
+             }
+             currentLocationDataState.error?.let { error->
+                 hideLoading()
+                 Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show()
+             }
+         }
+     }
+
+
+    }
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         setWeatherDataAdapter()
         setWeatherData()
+        setObserver()
     }
 
     private fun setWeatherDataAdapter() {
         binding.recyclerView.adapter = weatherAdapter
     }
 
-    private fun setWeatherData() {
-        weatherAdapter.setData(data = listOf(CurrentLocation()))
+    private fun setWeatherData(currentLocation: CurrentLocation? = null) {
+        weatherAdapter.setData(data = listOf(currentLocation ?: CurrentLocation()))
     }
 
 
-
     private fun getCurrentLocation() {
-        Toast.makeText(requireContext(), "GetCurrentLocation", Toast.LENGTH_SHORT).show()
+        homeViewModel.getCurrentLocation(fusedLocationProviderClient, geocoder)
     }
 
     private fun isLocationPermissionGranted(): Boolean {
@@ -75,29 +106,43 @@ class HomeFragment : Fragment() {
         ) == PackageManager.PERMISSION_GRANTED
     }
 
-    private fun requestLocationPermission(){
+    private fun requestLocationPermission() {
         locationPermissionLauncher.launch(Manifest.permission.ACCESS_FINE_LOCATION)
     }
 
-    private fun proceedWithCurrentLocation(){
+    private fun proceedWithCurrentLocation() {
 
-        if (isLocationPermissionGranted()){
+        if (isLocationPermissionGranted()) {
             getCurrentLocation()
-        }else{
+        } else {
             requestLocationPermission()
         }
     }
 
-    private fun showLocationOption(){
-        val option = arrayOf("current location","search Manually")
+    private fun showLocationOption() {
+        val option = arrayOf("current location", "search Manually")
         AlertDialog.Builder(requireContext()).apply {
             setTitle("Choose Location Method")
-            setItems(option){_,which ->
-                when(which){
-                    0 ->proceedWithCurrentLocation()
+            setItems(option) { _, which ->
+                when (which) {
+                    0 -> proceedWithCurrentLocation()
                 }
             }
             show()
+        }
+    }
+
+    private fun showLoading() {
+        binding.apply {
+            recyclerView.visibility = View.GONE
+            swipeRefreshLayout.isRefreshing = true
+        }
+    }
+
+    private fun hideLoading() {
+        binding.apply {
+            recyclerView.visibility = View.VISIBLE
+            swipeRefreshLayout.isRefreshing = false
         }
     }
 }
