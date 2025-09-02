@@ -9,7 +9,7 @@
         android:id="@+id/currentDate"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Today,1 September,2025"
+        android:text="Today,1 September, 2025"
         android:layout_marginStart="10dp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -24,7 +24,7 @@
         app:layout_constraintTop_toBottomOf="@id/currentDate" />
 
     <TextView
-        android:id="@+id/currentLocation"
+        android:id="@+id/textCurrentLocation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Dhanmondi,Dhaka,Bangladesh"
@@ -34,7 +34,7 @@
         app:layout_constraintTop_toBottomOf="@id/currentDate" />
 
     <ImageView
-        android:id="@+id/myLocation"
+        android:id="@+id/myCurrentLocation"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginRight="10dp"

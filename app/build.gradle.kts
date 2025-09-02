@@ -33,7 +33,7 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
-    viewBinding{
+    viewBinding {
         enable = true
     }
 }
@@ -65,4 +65,6 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.9.3")
 // Coil
     implementation("io.coil-kt:coil:2.7.0")
+//location
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 }
